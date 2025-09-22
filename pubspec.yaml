@@ -1,0 +1,54 @@
+name: caixa_flutter
+description: Controle de caixa em Flutter com Supabase e gráficos
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.0.0 <4.5.0"
+  flutter: ">=3.7.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  flutter_localizations:            # ✅ Localizações para o DatePicker
+    sdk: flutter
+
+  # State management
+  provider: ^6.0.7
+
+  # Supabase
+  supabase_flutter: ^2.10.1
+
+  # Gráficos
+  fl_chart: ^1.1.1
+
+  # Utilitários
+  intl: ^0.20.2
+  http: ^1.5.0
+  shared_preferences: ^2.1.15
+  url_launcher: ^6.1.7
+
+  # Path e manipulação
+  path_provider: ^2.1.5
+  platform: ^3.1.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.1
+  flutter_launcher_icons: ^0.13.1   # ✅ Aqui fica a dependência
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/logo.png
+    - assets/icons/
+
+flutter_launcher_icons:              # ✅ Configuração do ícone
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/icon.png"
+
+ 
+

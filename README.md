@@ -1,16 +1,8 @@
-# caixa_app
+# One Tec
 
-A new Flutter project.
+Projeto inicial para aplicativos gerencias para MEI.
 
-## Getting Started
+## Objetivo 
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Este projeto tem como prioridade servir como ferramenta pra pequenas empresas que estão tendo seu início agora.
+Ele visa atender empresas dos segmentos: comércio, autocenters, padarias, clínicas, escritórios e demais segmentos.

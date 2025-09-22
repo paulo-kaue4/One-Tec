@@ -1,0 +1,17 @@
+# Arquivos e pastas do Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+
+# Build
+build/
+
+# IDEs
+.idea/
+*.iml
+
+# Outros
+*.log

@@ -111,19 +111,19 @@ class _ListaProdutoPageState extends State<ListaProdutoPage> {
                       filled: true,
                       fillColor: const Color(0xFF1A1F3C),
                       prefixIcon: const Icon(Icons.search, color: Colors.white),
+                      suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear, color: Colors.white),
+                  onPressed: () {
+                    searchController.clear();
+                    setState(() {});
+                  },
+                ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: BorderSide.none,
                       ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.white),
-                  onPressed: () {
-                    searchController.clear();
-                    setState(() {});
-                  },
                 ),
               ],
             ),

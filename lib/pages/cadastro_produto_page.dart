@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Instância do Supabase
@@ -105,52 +107,55 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
     });
   }
 
+  double parsePrice(String value) {
+    return double.tryParse(value.replaceAll('.', '').replaceAll(',', '.')) ?? 0;
+  }
+
   Future<void> salvarProduto() async {
     if (_formKey.currentState!.validate()) {
       try {
         if (widget.produto == null) {
-          // 👇 Se não tiver produto, é CADASTRO
+          // 👇 CADASTRO
           await supabase.from('produto').insert({
             'descricao': descricaoController.text,
             'categoria': selectedCategoria,
-            'preco_venda': double.tryParse(precoVendaController.text) ?? 0,
-            'preco_custo': double.tryParse(precoCustoController.text),
+            'preco_venda': parsePrice(precoVendaController.text),
+            'preco_custo': parsePrice(precoCustoController.text),
             'estoque_produto': double.tryParse(estoqueController.text),
             'codigo_cean': codigoController.text.isEmpty
                 ? 'SEM GTIN'
                 : codigoController.text,
             'unidade_medida': selectedUnidade,
-            'preco_atacado': double.tryParse(precoAtacadoController.text),
-            'preco_varejo': double.tryParse(precoVarejoController.text),
+            'preco_atacado': parsePrice(precoAtacadoController.text),
+            'preco_varejo': parsePrice(precoVarejoController.text),
           });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Produto cadastrado com sucesso!')),
           );
         } else {
-          // 👇 Se tiver produto, é EDIÇÃO
+          // 👇 EDIÇÃO
           await supabase
               .from('produto')
               .update({
                 'descricao': descricaoController.text,
                 'categoria': selectedCategoria,
-                'preco_venda': double.tryParse(precoVendaController.text) ?? 0,
-                'preco_custo': double.tryParse(precoCustoController.text),
+                'preco_venda': parsePrice(precoVendaController.text),
+                'preco_custo': parsePrice(precoCustoController.text),
                 'estoque_produto': double.tryParse(estoqueController.text),
                 'codigo_cean': codigoController.text.isEmpty
                     ? 'SEM GTIN'
                     : codigoController.text,
                 'unidade_medida': selectedUnidade,
-                'preco_atacado': double.tryParse(precoAtacadoController.text),
-                'preco_varejo': double.tryParse(precoVarejoController.text),
+                'preco_atacado': parsePrice(precoAtacadoController.text),
+                'preco_varejo': parsePrice(precoVarejoController.text),
               })
-              .eq('id', widget.produto!['id']); // 👈 importante para atualizar certo
-
+              .eq('id', widget.produto!['id']);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Produto atualizado com sucesso!')),
           );
         }
 
-        Navigator.pop(context, true); // 👈 volta para lista e atualiza
+        Navigator.pop(context, true);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao salvar: $e')),
@@ -175,7 +180,6 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.produto != null;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(isEdit ? 'Editar Produto' : 'Cadastro de Produto'),
@@ -224,6 +228,10 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
                 controller: precoVendaController,
                 decoration: buildInputDecoration('Preço de Venda'),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyPtBrInputFormatter()
+                ],
                 validator: (value) => value == null || value.isEmpty
                     ? 'Informe o preço de venda'
                     : null,
@@ -233,6 +241,10 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
                 controller: precoCustoController,
                 decoration: buildInputDecoration('Preço de Custo'),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyPtBrInputFormatter()
+                ],
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -250,12 +262,20 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
                 controller: precoAtacadoController,
                 decoration: buildInputDecoration('Preço Atacado'),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyPtBrInputFormatter()
+                ],
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: precoVarejoController,
                 decoration: buildInputDecoration('Preço Varejo'),
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  CurrencyPtBrInputFormatter()
+                ],
               ),
               const SizedBox(height: 24),
               Row(
@@ -264,7 +284,7 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
                   ElevatedButton(
                     onPressed: salvarProduto,
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange),
+                        backgroundColor: isEdit ? Colors.orange : Colors.green),
                     child: Text(isEdit ? 'Atualizar Produto' : 'Salvar Produto'),
                   ),
                   ElevatedButton(
@@ -278,6 +298,28 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Formatter para moeda no padrão brasileiro com vírgula
+class CurrencyPtBrInputFormatter extends TextInputFormatter {
+  final NumberFormat _formatter =
+      NumberFormat.currency(locale: 'pt_BR', symbol: '', decimalDigits: 2);
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) return newValue.copyWith(text: '');
+
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final value = double.parse(digitsOnly) / 100;
+
+    final formatted = _formatter.format(value);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }

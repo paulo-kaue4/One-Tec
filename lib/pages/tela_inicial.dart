@@ -15,46 +15,6 @@ class TelaInicial extends StatelessWidget {
     );
   }
 
-  /// Menu container com ícone nativo do Flutter
-  Widget _menuContainer(
-      BuildContext context, String text, IconData icon, VoidCallback onTap) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFF023859),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          splashColor: Colors.white.withOpacity(0.2),
-          highlightColor: Colors.black.withOpacity(0.2),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 30,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  text,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// Tela de Caixa com Abas

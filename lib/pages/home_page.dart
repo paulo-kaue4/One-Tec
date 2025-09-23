@@ -1,4 +1,3 @@
-import 'package:caixa_flutter/pages/CadastroClientePage.dart';
 import 'package:flutter/material.dart';
 import 'movimentacao_page.dart';
 import 'grafico_page.dart';

@@ -23,12 +23,12 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFFFFFF), // fundo azul escuro
+      backgroundColor: Color(0xFFFFFFFF), 
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 🔵 Logo a partir da imagem
+            // Logo a partir da imagem
             Image.asset(
               'assets/images/logo.png', 
               width: 240, 

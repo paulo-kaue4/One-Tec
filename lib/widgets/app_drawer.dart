@@ -1,7 +1,10 @@
-import 'package:caixa_flutter/pages/home_page.dart';
+import 'package:caixa_flutter/pages/grafico_page.dart';
 import 'package:flutter/material.dart';
 import '../pages/lista_cliente_page.dart';
 import '../pages/lista_produto_page.dart';
+import '../pages/lista_servico_page.dart';
+import '../pages/agendamento_page.dart';
+import '../pages/movimentacao_page.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -9,6 +12,7 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
+      backgroundColor: const Color(0xFF1A1F3C),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
@@ -16,11 +20,14 @@ class AppDrawer extends StatelessWidget {
             accountName: Text("One Tec"),
             accountEmail: Text("p.kauê.pkk@gmail.com"),
             currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.pink,
+              backgroundColor: Color(0xFF1A1F3C),
               child: Text(
                 "OT",
                 style: TextStyle(fontSize: 20, color: Colors.white),
               ),
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
             ),
           ),
 
@@ -51,7 +58,10 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.build, color: Colors.pink),
             title: const Text("Serviços"),
             onTap: () {
-              // Futuro
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => ListaServicoPage()),
+              );
             },
           ),
 
@@ -62,7 +72,10 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.calendar_today, color: Colors.pink),
             title: const Text("Agendamentos"),
             onTap: () {
-              // Futuro
+              Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => AgendamentoPage())
+              );
             },
           ),
           
@@ -99,7 +112,7 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => CaixaApp()),
+                MaterialPageRoute(builder: (context) => MovimentacaoPage()),
               );
             },
           ),
@@ -108,10 +121,13 @@ class AppDrawer extends StatelessWidget {
 
         // Relatódios
           ListTile(
-            leading: const Icon(Icons.bar_chart, color: Colors.pink),
-            title: const Text("Relatórios"),
-            onTap: () {
-              // Futuro
+          leading: const Icon(Icons.bar_chart, color: Colors.pink),
+          title: const Text("Relatórios"),
+          onTap: () {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => GraficoPage()),
+            ); 
             },
           ),
 

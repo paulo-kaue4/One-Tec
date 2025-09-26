@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../services/caixa_service.dart';
 import '../models/caixa.dart';
+import 'tela_inicial.dart';
 
 class GraficoPage extends StatefulWidget {
   @override
@@ -125,7 +126,20 @@ class _GraficoPageState extends State<GraficoPage> {
     }
 
     return Scaffold(
-      backgroundColor: Color(0xFF0A0F2C),
+      backgroundColor: const Color(0xFF0A0F2C),
+      appBar: AppBar(
+        title: const Text("Relatório"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const TelaInicial()),
+            (route) => false,
+          ),
+        ),
+        backgroundColor: const Color(0xFF0A0F2C),
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Column(
           children: [

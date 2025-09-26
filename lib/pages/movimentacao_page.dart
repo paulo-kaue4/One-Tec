@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/caixa_service.dart';
 import '../models/caixa.dart';
+import 'tela_inicial.dart';
 
 class MovimentacaoPage extends StatefulWidget {
   @override
@@ -272,6 +273,19 @@ class _MovimentacaoPageState extends State<MovimentacaoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A0F2C),
+      appBar: AppBar(
+        title: const Text("Caixa"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const TelaInicial()),
+            (route) => false,
+          ),
+        ),
+        backgroundColor: const Color(0xFF0A0F2C),
+        elevation: 0,
+      ),
       body: Column(
         children: [
           Padding(
@@ -346,7 +360,7 @@ class _MovimentacaoPageState extends State<MovimentacaoPage> {
               children: [
                 Text(
                   "Saldo: R\$ ${listaFiltrada.fold<double>(0, (soma, c) => soma + c.valor).toStringAsFixed(2)}",
-        style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 Text(
                   "Total: ${listaFiltrada.length}",

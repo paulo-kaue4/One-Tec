@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'package:caixa_flutter/pages/tela_inicial.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/app_drawer.dart';
+
+final supabase = Supabase.instance.client;
 
 class AgendamentoPage extends StatefulWidget {
   const AgendamentoPage({Key? key}) : super(key: key);
@@ -12,18 +16,81 @@ class AgendamentoPage extends StatefulWidget {
 class _AgendamentoPageState extends State<AgendamentoPage> {
   DateTime _dataSelecionada = DateTime.now();
   String? _horarioSelecionado;
+  final TextEditingController _descricaoController = TextEditingController();
 
-  // Lista de horários fixos
-  final List<String> horarios = [
-    "08:00", "08:30", "09:00",
-    "09:30", "10:00", "10:30",
-    "11:00", "11:30", "13:30",
-    "14:00", "14:30", "15:00",
-    "15:30", "16:00", "16:30",
-    "17:00", "17:30", "18:00",
-  ];
+  List<String> _horario = []; // Agora será carregado do banco
+  Map<String, String> _horariosOcupados = {};
 
-  // Abre o calendário mensal
+  @override
+  void initState() {
+    super.initState();
+    _carregarHorarios();
+    _carregarHorariosOcupados();
+  }
+
+  @override
+  void dispose() {
+    _descricaoController.dispose();
+    super.dispose();
+  }
+
+  // Formatar data para YYYY-MM-DD
+  String _formatarData(DateTime dt) {
+    return "${dt.year.toString().padLeft(4, '0')}-"
+           "${dt.month.toString().padLeft(2, '0')}-"
+           "${dt.day.toString().padLeft(2, '0')}";
+  }
+
+  // Formatar hora HH:MM:SS -> HH:MM
+  String _formatarHora(String hora) {
+    final partes = hora.split(":");
+    final hh = partes[0].padLeft(2, '0');
+    final mm = partes[1].padLeft(2, '0');
+    return "$hh:$mm";
+  }
+
+  // Carregar horários da tabela "horario"
+  Future<void> _carregarHorarios() async {
+    try {
+      final response = await supabase.from('horario').select('hora');
+      final List dataList = response as List;
+      setState(() {
+        _horario = [for (var e in dataList) e['hora'] as String];
+      });
+    } catch (e) {
+      setState(() {
+        _horario = [];
+      });
+    }
+  }
+
+  // Carregar horários ocupados da tabela "agendamento"
+  Future<void> _carregarHorariosOcupados() async {
+    final dataStr = _formatarData(_dataSelecionada);
+    try {
+      final response = await supabase
+          .from('agendamento')
+          .select('hh_mm, descricao')
+          .eq('dd_mm_aa', dataStr);
+
+      final List dataList = response as List;
+      setState(() {
+        _horariosOcupados = {
+          for (var e in dataList) e['hh_mm'] as String: e['descricao'] as String
+        };
+        // Limpa seleção somente se o horário já estiver ocupado
+        if (_horarioSelecionado != null &&
+            _horariosOcupados.containsKey(_horarioSelecionado)) {
+          _horarioSelecionado = null;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _horariosOcupados = {};
+      });
+    }
+  }
+
   Future<void> _abrirCalendario() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -36,13 +103,41 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
       setState(() {
         _dataSelecionada = picked;
       });
+      await _carregarHorariosOcupados();
     }
   }
 
-  // Gera a semana atual (7 dias a partir do domingo/segunda)
   List<DateTime> _diasDaSemana(DateTime date) {
     final inicioSemana = date.subtract(Duration(days: date.weekday % 7));
-    return List.generate(7, (i) => inicioSemana.add(Duration(days: i)));
+    return List.generate(30, (i) => inicioSemana.add(Duration(days: i)));
+  }
+
+  Future<void> _salvarAgendamento() async {
+    if (_horarioSelecionado == null || _descricaoController.text.isEmpty) return;
+
+    try {
+      await supabase.from('agendamento').insert({
+        'dd_mm_aa': _formatarData(_dataSelecionada),
+        'hh_mm': _horarioSelecionado,
+        'descricao': _descricaoController.text,
+      });
+
+      setState(() {
+        _horariosOcupados[_horarioSelecionado!] = _descricaoController.text;
+        _horarioSelecionado = null;
+        _descricaoController.clear();
+      });
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Agendamento salvo com sucesso!")),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erro ao salvar: $e")),
+      );
+    }
   }
 
   @override
@@ -55,7 +150,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
         title: const Text("Agendamentos"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pushAndRemoveUntil(
+          onPressed: () => Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const TelaInicial()),
             (route) => false,
@@ -87,10 +182,12 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                       dia.month == _dataSelecionada.month &&
                       dia.year == _dataSelecionada.year;
                   return GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       setState(() {
                         _dataSelecionada = dia;
+                        _horarioSelecionado = null;
                       });
+                      await _carregarHorariosOcupados();
                     },
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 6),
@@ -127,13 +224,29 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
             ),
 
             const SizedBox(height: 20),
+
+            TextField(
+              controller: _descricaoController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Descrição",
+                labelStyle: const TextStyle(color: Colors.white),
+                filled: true,
+                fillColor: const Color(0xFF1A1F3C),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
             const Text(
               "Horários disponíveis",
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 10),
 
-            // Grid de horários
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -142,50 +255,53 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                   crossAxisSpacing: 8,
                   mainAxisSpacing: 8,
                 ),
-                itemCount: horarios.length,
+                itemCount: _horario.length,
                 itemBuilder: (context, index) {
-                  final hora = horarios[index];
+                  final hora = _horario[index];
+                  final descricao = _horariosOcupados[hora];
+                  final ocupada = descricao != null;
                   final selecionado = hora == _horarioSelecionado;
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _horarioSelecionado = hora;
-                      });
-                    },
-                    child: Container(
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: selecionado
-                            ? Colors.green
-                            : Colors.blueAccent,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        hora,
-                        style: const TextStyle(color: Colors.white),
-                      ),
+
+                  Widget botao = Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: ocupada
+                          ? Colors.grey
+                          : (selecionado ? Colors.green : Colors.blueAccent),
+                      borderRadius: BorderRadius.circular(8),
                     ),
+                    child: Text(
+                      _formatarHora(hora), // <-- Aqui aplicamos HH:MM
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  );
+
+                  if (ocupada) {
+                    botao = Tooltip(message: descricao, child: botao);
+                  }
+
+                  return GestureDetector(
+                    onTap: ocupada
+                        ? null
+                        : () {
+                            setState(() {
+                              _horarioSelecionado = hora;
+                            });
+                          },
+                    child: botao,
                   );
                 },
               ),
             ),
 
-            // Botões
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: _horarioSelecionado == null
+                    onPressed: _horarioSelecionado == null ||
+                            _descricaoController.text.isEmpty
                         ? null
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Agendado ${_horarioSelecionado!} em ${_dataSelecionada.day}/${_dataSelecionada.month}",
-                                ),
-                              ),
-                            );
-                          },
+                        : _salvarAgendamento,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
@@ -198,6 +314,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                     onPressed: () {
                       setState(() {
                         _horarioSelecionado = null;
+                        _descricaoController.clear();
                       });
                     },
                     style: ElevatedButton.styleFrom(

@@ -227,7 +227,7 @@ class _ListaAgendamentoPageState extends State<ListaAgendamentoPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         onPressed: () {
-          Navigator.pushReplacement(
+          Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AgendamentoPage())
           );

@@ -1,9 +1,9 @@
 import 'package:caixa_flutter/pages/grafico_page.dart';
+import 'package:caixa_flutter/pages/lista_agendamento_page.dart';
 import 'package:flutter/material.dart';
 import '../pages/lista_cliente_page.dart';
 import '../pages/lista_produto_page.dart';
 import '../pages/lista_servico_page.dart';
-import '../pages/agendamento_page.dart';
 import '../pages/movimentacao_page.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -74,7 +74,7 @@ class AppDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => AgendamentoPage())
+              MaterialPageRoute(builder: (context) => ListaAgendamentoPage())
               );
             },
           ),

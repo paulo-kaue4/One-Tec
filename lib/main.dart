@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_localizations/flutter_localizations.dart'; // ✅ necessário
-import 'pages/movimentacao_page.dart';
-import 'pages/grafico_page.dart';
 import 'pages/splash_page.dart'; // ⬅️ IMPORTA A SPLASH
-import 'pages/home_page.dart';
 import 'pages/tela_inicial.dart';
 
 void main() async {

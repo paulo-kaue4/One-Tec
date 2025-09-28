@@ -72,7 +72,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.calendar_today, color: Colors.pink),
             title: const Text("Agendamentos"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => ListaAgendamentoPage())
               );

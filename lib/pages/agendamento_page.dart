@@ -6,7 +6,9 @@ import '../widgets/app_drawer.dart';
 final supabase = Supabase.instance.client;
 
 class AgendamentoPage extends StatefulWidget {
-  const AgendamentoPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? agendamento; // Registro para edição
+
+  const AgendamentoPage({Key? key, this.agendamento}) : super(key: key);
 
   @override
   State<AgendamentoPage> createState() => _AgendamentoPageState();
@@ -17,13 +19,22 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
   String? _horarioSelecionado;
   final TextEditingController _descricaoController = TextEditingController();
 
-  List<String> _horario = []; // Agora será carregado do banco
+  List<String> _horario = [];
   Map<String, String> _horariosOcupados = {};
+
+  bool get isEdit => widget.agendamento != null;
 
   @override
   void initState() {
     super.initState();
     _carregarHorarios();
+    if (isEdit) {
+      // Preenche campos com o registro para edição
+      final ag = widget.agendamento!;
+      _dataSelecionada = DateTime.parse(ag['dd_mm_aa']);
+      _horarioSelecionado = ag['hh_mm'];
+      _descricaoController.text = ag['descricao'];
+    }
     _carregarHorariosOcupados();
   }
 
@@ -69,15 +80,22 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
     try {
       final response = await supabase
           .from('agendamento')
-          .select('hh_mm, descricao')
+          .select('id, hh_mm, descricao')
           .eq('dd_mm_aa', dataStr);
 
       final List dataList = response as List;
       setState(() {
         _horariosOcupados = {
-          for (var e in dataList) e['hh_mm'] as String: e['descricao'] as String
+          for (var e in dataList)
+            e['hh_mm'] as String: e['descricao'] as String
         };
-        // Limpa seleção somente se o horário já estiver ocupado
+
+        // Se estiver em edição, permitir manter o horário selecionado
+        if (isEdit && _horarioSelecionado != null) {
+          _horariosOcupados.remove(_horarioSelecionado);
+        }
+
+        // Limpa seleção se o horário estiver ocupado
         if (_horarioSelecionado != null &&
             _horariosOcupados.containsKey(_horarioSelecionado)) {
           _horarioSelecionado = null;
@@ -115,11 +133,24 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
     if (_horarioSelecionado == null || _descricaoController.text.isEmpty) return;
 
     try {
-      await supabase.from('agendamento').insert({
-        'dd_mm_aa': _formatarData(_dataSelecionada),
-        'hh_mm': _horarioSelecionado,
-        'descricao': _descricaoController.text,
-      });
+      if (isEdit) {
+        // Atualizar registro existente
+        await supabase
+            .from('agendamento')
+            .update({
+              'dd_mm_aa': _formatarData(_dataSelecionada),
+              'hh_mm': _horarioSelecionado,
+              'descricao': _descricaoController.text,
+            })
+            .eq('id', widget.agendamento!['id']); // assume que a tabela tem campo 'id'
+      } else {
+        // Criar novo agendamento
+        await supabase.from('agendamento').insert({
+          'dd_mm_aa': _formatarData(_dataSelecionada),
+          'hh_mm': _horarioSelecionado,
+          'descricao': _descricaoController.text,
+        });
+      }
 
       setState(() {
         _horariosOcupados[_horarioSelecionado!] = _descricaoController.text;
@@ -129,8 +160,10 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Agendamento salvo com sucesso!")),
+        SnackBar(content: Text(isEdit ? "Agendamento atualizado!" : "Agendamento salvo!")),
       );
+
+      Navigator.pop(context, true); // retorna à lista para atualizar
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -146,10 +179,10 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
     return Scaffold(
       drawer: const AppDrawer(),
       appBar: AppBar(
-        title: const Text("Agendamentos"),
+        title: Text(isEdit ? "Editar Agendamento" : "Agendamentos"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
@@ -267,7 +300,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      _formatarHora(hora), // <-- Aqui aplicamos HH:MM
+                      _formatarHora(hora),
                       style: const TextStyle(color: Colors.white),
                     ),
                   );
@@ -301,7 +334,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                     ),
-                    child: const Text("Agendar"),
+                    child: Text(isEdit ? "Atualizar" : "Agendar"),
                   ),
                 ),
                 const SizedBox(width: 10),

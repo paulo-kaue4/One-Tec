@@ -150,11 +150,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
         title: const Text("Agendamentos"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const TelaInicial()),
-            (route) => false,
-          ),
+            onPressed: () => Navigator.pop(context),
         ),
         actions: [
           IconButton(
@@ -162,10 +158,10 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
             onPressed: _abrirCalendario,
           ),
         ],
-        backgroundColor: const Color(0xFF1A1F3C),
+        backgroundColor: const Color(0xFF0A0F2C),
       ),
       body: Container(
-        color: const Color(0xFF0E1330),
+        color: const Color(0xFF0A0F2C),
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,7 +223,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
 
             TextField(
               controller: _descricaoController,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Color(0xFFFFFFFF)),
               decoration: InputDecoration(
                 labelText: "Descrição",
                 labelStyle: const TextStyle(color: Colors.white),
@@ -235,6 +231,7 @@ class _AgendamentoPageState extends State<AgendamentoPage> {
                 fillColor: const Color(0xFF1A1F3C),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),

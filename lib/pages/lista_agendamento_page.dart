@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'tela_inicial.dart';
+import 'agendamento_page.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -41,6 +42,22 @@ class _ListaAgendamentoPageState extends State<ListaAgendamentoPage> {
     });
   }
 
+  Future<void> _abrirCalendario() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _dataSelecionada,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2040),
+      locale: const Locale("pt", "BR"),
+    );
+        if (picked != null && picked != _dataSelecionada) {
+      setState(() {
+        _dataSelecionada = picked;
+      });
+      await _carregarAgendamentos();();
+    }
+  }
+
   Future<void> _excluirAgendamento(int id) async {
     await supabase.from("agendamento").delete().eq("id", id);
     _carregarAgendamentos();
@@ -48,15 +65,15 @@ class _ListaAgendamentoPageState extends State<ListaAgendamentoPage> {
 
   @override
   Widget build(BuildContext context) {
-    final semana = List.generate(7, (i) {
+    final semana = List.generate(30, (i) {
       return DateTime(_dataSelecionada.year, _dataSelecionada.month,
           _dataSelecionada.day - _dataSelecionada.weekday + 1 + i);
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A133A),
+      backgroundColor: const Color(0xFF0A0F2C),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A133A),
+        backgroundColor: const Color(0xFF0A0F2C),
         elevation: 0,
         title: Text(
           DateFormat("MMMM yyyy", "pt_BR")
@@ -78,66 +95,63 @@ class _ListaAgendamentoPageState extends State<ListaAgendamentoPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_month),
-            onPressed: () {},
+            onPressed: _abrirCalendario,
           )
         ],
       ),
       body: Column(
-        children: [
-          // Cabeçalho mês/ano + semana
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 10),
-            child: Column(
-              children: [
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: semana.map((data) {
-                    final selecionado = data.day == _dataSelecionada.day &&
-                        data.month == _dataSelecionada.month &&
-                        data.year == _dataSelecionada.year;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _dataSelecionada = data;
-                        });
-                        _carregarAgendamentos();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: selecionado
-                              ? Colors.blue
-                              : Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(
-                              DateFormat("E", "pt_BR")
-                                  .format(data)
-                                  .substring(0, 3),
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 12),
-                            ),
-                            const SizedBox(height: 5),
-                            Text(
-                              "${data.day}",
-                              style: TextStyle(
-                                  color: selecionado
-                                      ? Colors.white
-                                      : Colors.white70,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
+        children: [           
+          //// Semana em carrossel
+            SizedBox(
+              height: 80,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: semana.length,
+                itemBuilder: (context, index) {
+                  final dia = semana[index];
+                  final selecionado = dia.day == _dataSelecionada.day &&
+                      dia.month == _dataSelecionada.month &&
+                      dia.year == _dataSelecionada.year;
+                  return GestureDetector(
+                    onTap: () async {
+                      setState(() {
+                        _dataSelecionada = dia;
+                      });
+                      _carregarAgendamentos();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: selecionado
+                            ? Colors.blueAccent
+                            : const Color(0xFF1A1F3C),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    );
-                  }).toList(),
-                )
-              ],
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"]
+                                [dia.weekday % 7],
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          Text(
+                            "${dia.day}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: selecionado
+                                  ? Colors.white
+                                  : Colors.blueAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
 
           // Lista de agendamentos
           Expanded(
@@ -156,7 +170,7 @@ class _ListaAgendamentoPageState extends State<ListaAgendamentoPage> {
                         itemBuilder: (context, index) {
                           final agendamento = _agendamentosDoDia[index];
                           return Card(
-                            color: const Color(0xFF132050),
+                            color: const Color(0xFF1A1F3C),
                             child: ListTile(
                               title: Text(
                                 // Formata a data do banco
@@ -213,7 +227,10 @@ class _ListaAgendamentoPageState extends State<ListaAgendamentoPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.orange,
         onPressed: () {
-          // TODO: abrir tela de novo agendamento
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => AgendamentoPage())
+          );
         },
         child: const Icon(Icons.add),
       ),

@@ -36,7 +36,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.people, color: Colors.pink),
             title: const Text("Clientes"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ListaClientesPage()),
               );
@@ -47,7 +47,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.shopping_bag, color: Colors.pink),
             title: const Text("Produtos"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ListaProdutoPage()),
               );
@@ -58,7 +58,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.build, color: Colors.pink),
             title: const Text("Serviços"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => ListaServicoPage()),
               );
@@ -110,7 +110,7 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.attach_money, color: Colors.pink),
             title: const Text("Caixa"),
             onTap: () {
-              Navigator.pushReplacement(
+              Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => MovimentacaoPage()),
               );
@@ -124,7 +124,7 @@ class AppDrawer extends StatelessWidget {
           leading: const Icon(Icons.bar_chart, color: Colors.pink),
           title: const Text("Relatórios"),
           onTap: () {
-            Navigator.pushReplacement(
+            Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => GraficoPage()),
             ); 

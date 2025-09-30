@@ -42,7 +42,7 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
     fetchCategorias();
     fetchUnidades();
 
-    // 👇 Se for edição, preencher os campos
+    // Se for editar, preencher os campos
     if (widget.produto != null) {
       descricaoController.text = widget.produto!['descricao'] ?? '';
       precoVendaController.text =
@@ -115,7 +115,7 @@ class _CadastroProdutoPageState extends State<CadastroProdutoPage> {
     if (_formKey.currentState!.validate()) {
       try {
         if (widget.produto == null) {
-          // 👇 CADASTRO
+          // CADASTRO
           await supabase.from('produto').insert({
             'descricao': descricaoController.text,
             'categoria': selectedCategoria,
